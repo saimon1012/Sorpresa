@@ -1,0 +1,15 @@
+{
+  "name": "sorpresa",
+  "version": "1.0.0",
+  "description": "Personal website with Vercel Web Analytics",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"No test specified\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/analytics": "^1.3.1"
+  }
+}
