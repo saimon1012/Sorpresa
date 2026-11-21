@@ -93,7 +93,12 @@ $('registerBtn').addEventListener('click', async () => {
     const email = $('registerEmail').value;
     const pass = $('registerPassword').value;
     try {
-        await createUserWithEmailAndPassword(auth, email, pass);
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        // 👇 NUEVO: guardar email en colección "usuarios"
+        await setDoc(doc(db, 'usuarios', cred.user.uid), {
+            email: email,
+            creadoEn: serverTimestamp()
+        });
         cerrarModal('registerModal');
         mostrarToast('Cuenta creada ✅');
         cargarMisCartas();
@@ -101,7 +106,6 @@ $('registerBtn').addEventListener('click', async () => {
         mostrarToast('Error: ' + e.message);
     }
 });
-
 // Cerrar modales y cambiar entre login/registro
 document.querySelectorAll('.close-modal').forEach(btn => {
     btn.addEventListener('click', () => cerrarModal(btn.dataset.modal));
