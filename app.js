@@ -3,6 +3,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, updateDoc, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
 // ⚠️ CONFIGURA TU FIREBASE AQUÍ
 const firebaseConfig = {
@@ -18,6 +19,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const messaging = getMessaging(app);
 
 let currentUser = null;
 let cartaActual = null;
@@ -36,19 +38,34 @@ const cerrarModal = (id) => $(id).classList.remove('active');
 const abrirModal = (id) => $(id).classList.add('active');
 
 // ===== AUTENTICACIÓN =====
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     const authText = $('authText');
     const authIcon = $('authIcon');
     if (user) {
         authText.textContent = 'Salir';
         authIcon.className = 'fa-solid fa-right-from-bracket';
+
+        // 👇 NUEVO: pedir permiso y guardar token FCM
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                const token = await getToken(messaging, {
+                    vapidKey: 'PEGA_AQUI_TU_VAPID_KEY' // ⚠️ Reemplaza esto
+                });
+                if (token) {
+                    await setDoc(doc(db, 'tokens', user.uid), { fcmToken: token });
+                    console.log('Token FCM guardado:', token);
+                }
+            }
+        } catch (e) {
+            console.error('Error obteniendo token FCM:', e);
+        }
     } else {
         authText.textContent = 'Entrar';
         authIcon.className = 'fa-solid fa-user';
     }
 });
-
 $('authBtn').addEventListener('click', () => {
     if (currentUser) {
         const accion = confirm('¿Ver tus cartas? Acepta = Ver cartas / Cancelar = Cerrar sesión');
@@ -221,9 +238,7 @@ $('saveCartaBtn').addEventListener('click', async () => {
         console.error(e);
         mostrarToast('Error: ' + e.message);
     }
-});
-
-$('copiarBtn').addEventListener('click', async () => {
+});$('copiarBtn').addEventListener('click', async () => {
     const url = window.location.origin + window.location.pathname + '?c=' + (cartaActual?.codigo || '');
     try {
         await navigator.clipboard.writeText(url);
