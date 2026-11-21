@@ -20,6 +20,12 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const messaging = getMessaging(app);
+// Registrar el Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        .then((reg) => console.log('Service Worker registrado:', reg))
+        .catch((err) => console.error('Error Service Worker:', err));
+}
 
 let currentUser = null;
 let cartaActual = null;
