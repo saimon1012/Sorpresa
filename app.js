@@ -51,7 +51,7 @@ onAuthStateChanged(auth, async (user) => {
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
                 const token = await getToken(messaging, {
-                    vapidKey: 'PEGA_AQUI_TU_VAPID_KEY' // ⚠️ Reemplaza esto
+                    vapidKey: 'BNB_xvIAV8GaNjJj0CcP1QVvauaHPChBCW2zFjl0KJvzn5KrSZlByAkGtx51TurSvd7-zwVwgCjOHPAYtpr8W1I' 
                 });
                 if (token) {
                     await setDoc(doc(db, 'tokens', user.uid), { fcmToken: token });
